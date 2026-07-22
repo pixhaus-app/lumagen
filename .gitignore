@@ -1,0 +1,31 @@
+# ── Rust / Cargo build output ──────────────────────────────────────────────
+/target
+/target-test
+**/*.rs.bk
+*.pdb
+
+# ── Editors / OS cruft ─────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs & local scratch ───────────────────────────────────────────────────
+*.log
+/tmp/
+/scratch/
+
+# ── Internal working docs — kept out of the published repo ─────────────────
+/docs/
+
+# ── Reference material ─────────────────────────────────────────────────────
+# Local design/reference working set — the UI mockup, asset generators, and the
+# full multi-platform brand pack. Only the few assets the build embeds are
+# tracked; those are force-added past this rule.
+/reference/
+
+# ── Local tooling / agent config (not shared) ──────────────────────────────
+/.claude/
+/.conclaude.yaml
