@@ -1,0 +1,15 @@
+avoid-breaking-exported-api = false
+# MSRV tracks the toolchain pin (rust-toolchain.toml = 1.97), not an older floor: the
+# codebase uses features stabilized after 1.85 (let-chains and as_chunks at 1.88, and the
+# 1.96/1.97 items the rust-modern skill recommends), so clippy's incompatible_msrv lint
+# must permit them. Keep this in step with the pin.
+msrv = "1.97"
+# Product/proper names that read as code to the doc linter but are prose here. `..`
+# keeps clippy's default ident allowlist.
+doc-valid-idents = ["OpenRouter", ".."]
+disallowed-methods = [
+    { path = "std::option::Option::unwrap", reason = "use `?`, `unwrap_or`, or `ok_or` to surface errors" },
+    { path = "std::result::Result::unwrap", reason = "use `?` or pattern-match the error" },
+    { path = "std::option::Option::expect", reason = "use `ok_or_else` with a typed error" },
+    { path = "std::result::Result::expect", reason = "use `?` or `map_err` with context" },
+]

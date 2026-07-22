@@ -1,0 +1,50 @@
+[package]
+name = "lumagen-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+license = "MIT OR Apache-2.0"
+description = "Egui-free core for Lumagen: data model, procedural mock renderer, deterministic map derivation, AI providers (fal.ai / OpenRouter), document persistence, and export."
+
+[lints]
+workspace = true
+
+[dependencies]
+# Color type shared with the UI. egui is a heavyweight but reusing its Color32 keeps the
+# mock renderer's API unchanged for now; a future cleanup can swap in a tiny color type.
+egui = "=0.34.2"
+# png for map encode/decode; jpeg because real providers may return JPEG payloads.
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+png = "0.18"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+serde_json = "1"
+rmp-serde = "1.3"
+zstd = "0.13"
+thiserror = "2"
+anyhow = { version = "1", features = ["backtrace"] }
+tracing = "0.1"
+# Async provider stack (reqwest: rustls + ring — no aws-lc-rs/NASM on Windows).
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+# reqwest 0.13: rustls is default but its `rustls` feature pulls aws-lc-rs (needs NASM on
+# Windows). Use `rustls-no-provider` + explicit ring to stay pure-Rust on Windows.
+reqwest = { version = "0.13", default-features = false, features = [
+    "rustls-no-provider",
+    "json",
+    "stream",
+    "charset",
+    "http2",
+] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+async-trait = "0.1"
+futures = "0.3"
+base64 = "0.22"
+fast_image_resize = "6"
+exr = "1.74"
+directories = "6"
+
+[dev-dependencies]
+insta = { version = "1", features = ["json"] }
+rstest = "0.26"
+proptest = "1"
