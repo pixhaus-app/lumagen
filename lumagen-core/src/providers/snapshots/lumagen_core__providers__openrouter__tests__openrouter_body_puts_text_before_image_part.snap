@@ -1,0 +1,32 @@
+---
+source: lumagen-core/src/providers/openrouter.rs
+expression: redacted
+---
+Object {
+    "image_config": Object {
+        "aspect_ratio": String("1:1"),
+    },
+    "messages": Array [
+        Object {
+            "content": Array [
+                Object {
+                    "text": String("make metallic"),
+                    "type": String("text"),
+                },
+                Object {
+                    "image_url": Object {
+                        "url": String("<data-uri>"),
+                    },
+                    "type": String("image_url"),
+                },
+            ],
+            "role": String("user"),
+        },
+    ],
+    "modalities": Array [
+        String("image"),
+        String("text"),
+    ],
+    "model": String("google/gemini-2.5-flash-image"),
+    "seed": Number(7),
+}
