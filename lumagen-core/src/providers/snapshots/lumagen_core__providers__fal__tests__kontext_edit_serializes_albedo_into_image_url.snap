@@ -1,0 +1,18 @@
+---
+source: lumagen-core/src/providers/fal.rs
+assertion_line: 664
+expression: keys
+---
+[
+    "aspect_ratio",
+    "guidance_scale",
+    "image_size",
+    "image_url",
+    "image_urls",
+    "num_images",
+    "output_format",
+    "prompt",
+    "quality",
+    "seed",
+    "sync_mode",
+]
