@@ -3,7 +3,7 @@ name = "lumagen-core"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.97"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 description = "Egui-free core for Lumagen: data model, procedural mock renderer, deterministic map derivation, AI providers (fal.ai / OpenRouter), document persistence, and export."
 
 [lints]

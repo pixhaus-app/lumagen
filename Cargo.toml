@@ -6,7 +6,7 @@ name = "lumagen"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.97"
-license = "MIT OR Apache-2.0"
+license = "MIT"
 description = "Lumagen — AI-assisted PBR material studio: generate, refine, and export texture map sets."
 # Kept inside src/ (repo rule: no new top-level paths); embeds the Windows exe icon.
 build = "src/build.rs"

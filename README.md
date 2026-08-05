@@ -11,7 +11,7 @@
 Describe a material — Lumagen generates a seamless albedo and derives the
 **full, pixel-aligned PBR map set**, ready to drop straight into your engine.
 
-![License](https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-6f57c9)
+![License](https://img.shields.io/badge/license-MIT-6f57c9)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-2b2d34)
 ![Built with Rust](https://img.shields.io/badge/built%20with-Rust%20%C2%B7%20egui%20%C2%B7%20wgpu-00c9e8)
 
@@ -142,5 +142,4 @@ cargo bundle --release --format msi
 
 ## License
 
-Dual-licensed under either [MIT](LICENSE-MIT) or
-[Apache 2.0](LICENSE-APACHE), at your option.
+Released under the [MIT License](LICENSE-MIT).
