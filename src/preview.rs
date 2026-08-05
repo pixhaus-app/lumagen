@@ -590,7 +590,7 @@ fn texture_binding(binding: u32, view: &wgpu::TextureView) -> wgpu::BindGroupEnt
 // ── The paint callback ────────────────────────────────────────────────────
 
 /// Renders the mesh into the offscreen target during `prepare`. The UI then shows that target via
-/// the `TextureId` from [`PreviewResources::egui_texture`]. `paint` is a no-op (the image is drawn
+/// the `TextureId` it registered for that offscreen view. `paint` is a no-op (the image is drawn
 /// by egui itself as a regular `Image` widget).
 pub struct PreviewCallback {
     pub mesh: PreviewMesh,
