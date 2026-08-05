@@ -60,20 +60,27 @@ jobs:
           Compress-Archive -Path "dist/$name/*" -DestinationPath "dist/$name.zip" -Force
           "path=dist/$name.zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - name: Install cargo-bundle
-        run: cargo install cargo-bundle --locked
+      - name: Install cargo-wix
+        run: cargo install cargo-wix --locked
 
       - name: Build MSI installer
-        # Uses [package.metadata.bundle] in Cargo.toml; WiX Toolset ships on the
-        # windows-latest image.
-        run: cargo bundle --release --format msi
+        shell: bash
+        # cargo-bundle's MSI bundler is experimental and broken ("Name is not a
+        # valid value for column Data"); cargo-wix drives the WiX Toolset (present
+        # on the windows-latest image) and is the reliable path. The UpgradeCode is
+        # pinned so installs upgrade cleanly across releases; the ProductCode stays
+        # fresh per build (Product Id="*"), as MSI expects. --no-build reuses the
+        # binary from the "Build release binary" step.
+        run: |
+          cargo wix init --force --package lumagen --upgrade-guid 5A0976D2-AF56-48DC-990D-FEE57255C0CF
+          cargo wix --no-build --nocapture --package lumagen
 
       - name: Collect MSI
         id: msi
         shell: pwsh
         run: |
           $V = "${{ steps.v.outputs.version }}"
-          $src = Get-ChildItem target/release/bundle/msi/*.msi | Select-Object -First 1
+          $src = Get-ChildItem target/wix/*.msi | Select-Object -First 1
           $dst = "dist/lumagen-$V-x86_64-windows.msi"
           Copy-Item $src.FullName $dst
           "path=$dst" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8

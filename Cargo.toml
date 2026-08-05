@@ -4,6 +4,7 @@ members = [".", "lumagen-core"]
 [package]
 name = "lumagen"
 version = "0.1.0"
+authors = ["Luis Morales <luismmorales@gmail.com>"]
 edition = "2024"
 rust-version = "1.97"
 license = "MIT"
