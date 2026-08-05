@@ -1,0 +1,96 @@
+name: Release
+
+# Tag a version to ship it:
+#   git tag v0.1.0 && git push origin v0.1.0
+# Or run manually from the Actions tab (workflow_dispatch) to build artifacts
+# without publishing a release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to stamp on the artifacts (defaults to Cargo.toml)"
+        required: false
+
+permissions:
+  contents: write # create the GitHub Release and upload assets
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  windows:
+    name: Windows — portable zip + MSI installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned toolchain (rust-toolchain.toml)
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Resolve version
+        id: v
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            V="${GITHUB_REF_NAME#v}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            V="${{ github.event.inputs.version }}"
+          else
+            V="$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"([^"]+)".*/\1/')"
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $V"
+
+      - name: Build release binary
+        run: cargo build --release --bin lumagen
+
+      - name: Package portable zip
+        id: portable
+        shell: pwsh
+        run: |
+          $V = "${{ steps.v.outputs.version }}"
+          $name = "lumagen-$V-x86_64-windows-portable"
+          New-Item -ItemType Directory -Force -Path "dist/$name" | Out-Null
+          Copy-Item target/release/lumagen.exe "dist/$name/"
+          Copy-Item README.md, LICENSE-MIT "dist/$name/"
+          Compress-Archive -Path "dist/$name/*" -DestinationPath "dist/$name.zip" -Force
+          "path=dist/$name.zip" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Install cargo-bundle
+        run: cargo install cargo-bundle --locked
+
+      - name: Build MSI installer
+        # Uses [package.metadata.bundle] in Cargo.toml; WiX Toolset ships on the
+        # windows-latest image.
+        run: cargo bundle --release --format msi
+
+      - name: Collect MSI
+        id: msi
+        shell: pwsh
+        run: |
+          $V = "${{ steps.v.outputs.version }}"
+          $src = Get-ChildItem target/release/bundle/msi/*.msi | Select-Object -First 1
+          $dst = "dist/lumagen-$V-x86_64-windows.msi"
+          Copy-Item $src.FullName $dst
+          "path=$dst" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumagen-windows-${{ steps.v.outputs.version }}
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Lumagen ${{ steps.v.outputs.version }}
+          files: |
+            ${{ steps.portable.outputs.path }}
+            ${{ steps.msi.outputs.path }}
+          generate_release_notes: true

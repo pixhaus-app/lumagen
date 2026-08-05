@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  # Match the project's gate: warnings are errors. Cargo passes `--cap-lints allow`
+  # to registry deps, so this only bites the workspace crates.
+  RUSTFLAGS: -D warnings
+
+jobs:
+  check:
+    name: fmt · clippy · doc · build · test
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned toolchain (rust-toolchain.toml)
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: rustdoc
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --workspace --no-deps --document-private-items
+
+      - name: build (all targets — proves the GPU test suites compile)
+        run: cargo build --workspace --all-targets
+
+      - name: test (non-GPU suites)
+        # `ui_screens` and `preview_render` render through wgpu and need a real GPU
+        # adapter; GitHub-hosted runners have none, so they run locally (and in the
+        # conclaude Stop gate) rather than here. Everything else runs on CI.
+        run: |
+          cargo test --workspace --lib --bins
+          cargo test -p lumagen-core --tests
+          cargo test -p lumagen --test workflows --test modal_interaction --test settings_interaction
+
+  deny:
+    name: cargo-deny (licenses · advisories · sources)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-deny
+      - name: cargo deny check
+        run: cargo deny --config .cargo/deny.toml check
