@@ -1,0 +1,12 @@
+# Keep all text files LF in the repo AND in the working tree on every platform,
+# so line-ending-sensitive tooling behaves identically on Windows/Linux/macOS
+# runners. Without this, Git checks out LF blobs as CRLF on Windows and
+# `rustfmt --check` (newline_style = "Unix") rejects every file.
+* text=auto eol=lf
+
+# Binary assets — never apply text/EOL conversion.
+*.png  binary
+*.ico  binary
+*.gif  binary
+*.icns binary
+*.exr  binary
