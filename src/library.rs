@@ -23,7 +23,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
     egui::Panel::top("lib_head")
         .exact_size(52.0)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
                 ui.add_space(12.0);
@@ -67,7 +67,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
         .exact_size(236.0)
         .resizable(false)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(12.0);
             ui.horizontal(|ui| {
                 ui.add_space(12.0);
@@ -115,7 +115,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
 
     egui::CentralPanel::default()
         .frame(Frame::new().fill(BG_0()).inner_margin(egui::Margin::symmetric(20, 16)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.horizontal(|ui| {
                 ui.label(RichText::new(state.lib_nav.clone()).size(15.0).strong());
                 let n = filtered(state).len();

@@ -30,7 +30,7 @@ fn top_bar(ui: &mut Ui, state: &mut AppState) {
     egui::Panel::top("topbar")
         .exact_size(48.0)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
                 ui.add_space(8.0);
@@ -139,7 +139,7 @@ fn left_panel(ui: &mut Ui, state: &mut AppState) {
         .exact_size(264.0)
         .resizable(false)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(6.0);
             ui.horizontal(|ui| {
                 ui.add_space(10.0);
@@ -429,7 +429,7 @@ fn pan_zoom(ui: &Ui, state: &mut AppState, avail: Rect, resp: &egui::Response) {
 }
 
 fn central(ui: &mut Ui, state: &mut AppState, render_state: Option<&eframe::egui_wgpu::RenderState>) {
-    egui::CentralPanel::default().frame(Frame::new().fill(BG_0())).show_inside(ui, |ui| {
+    egui::CentralPanel::default().frame(Frame::new().fill(BG_0())).show(ui, |ui| {
         viewport_toolbar(ui, state);
         ui.separator();
         let avail = ui.available_rect_before_wrap();
@@ -993,7 +993,7 @@ fn right_panel(ui: &mut Ui, ctx: &egui::Context, state: &mut AppState) {
         .exact_size(312.0)
         .resizable(false)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.add_space(8.0);
                 let id = state.selected;
@@ -1574,7 +1574,7 @@ fn bottom_bar(ui: &mut Ui, state: &mut AppState) {
     egui::Panel::bottom("jobbar")
         .exact_size(height)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(3.0);
             ui.horizontal(|ui| {
                 ui.add_space(12.0);

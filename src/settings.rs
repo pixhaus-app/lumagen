@@ -76,7 +76,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
     egui::Panel::top("set_head")
         .exact_size(52.0)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
                 ui.add_space(12.0);
@@ -91,7 +91,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
         .exact_size(240.0)
         .resizable(false)
         .frame(Frame::new().fill(BG_1()).stroke(Stroke::new(1.0_f32, BORDER)))
-        .show_inside(ui, |ui| {
+        .show(ui, |ui| {
             ui.add_space(12.0);
             for cat in SettingsCategory::ALL {
                 let on = state.settings.category == cat;
@@ -113,7 +113,7 @@ pub fn show(ui: &mut egui::Ui, state: &mut AppState) {
             }
         });
 
-    egui::CentralPanel::default().frame(Frame::new().fill(BG_0())).show_inside(ui, |ui| {
+    egui::CentralPanel::default().frame(Frame::new().fill(BG_0())).show(ui, |ui| {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.set_max_width(840.0);
             ui.add_space(20.0);
