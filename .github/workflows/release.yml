@@ -2,8 +2,8 @@ name: Release
 
 # Tag a version to ship it:
 #   git tag v0.1.0 && git push origin v0.1.0
-# Or run manually from the Actions tab (workflow_dispatch) to build artifacts
-# without publishing a release.
+# Or run manually from the Actions tab (workflow_dispatch) to build+validate the
+# artifacts without publishing a release (the publish job is tag-only).
 on:
   push:
     tags: ["v*"]
@@ -13,18 +13,28 @@ on:
         description: "Version to stamp on the artifacts (defaults to Cargo.toml)"
         required: false
 
+# Least privilege at the top; each job widens only to what it needs.
 permissions:
-  contents: write # create the GitHub Release and upload assets
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  windows:
-    name: Windows — portable zip + MSI installer
+  build:
+    name: Build — portable zip + MSI
     runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write # OIDC, for build-provenance attestation
+      attestations: write # write the provenance attestation
+    outputs:
+      version: ${{ steps.v.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Install pinned toolchain (rust-toolchain.toml)
         run: rustup show
@@ -46,7 +56,7 @@ jobs:
           echo "Resolved version: $V"
 
       - name: Build release binary
-        run: cargo build --release --bin lumagen
+        run: cargo build --release --locked --bin lumagen
 
       - name: Package portable zip
         id: portable
@@ -85,19 +95,86 @@ jobs:
           Copy-Item $src.FullName $dst
           "path=$dst" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: lumagen-windows-${{ steps.v.outputs.version }}
-          path: dist/*
-          if-no-files-found: error
-
-      - name: Publish GitHub Release
+      - name: Attest build provenance (SLSA)
+        # Only for real releases (tag pushes) — records signed provenance for the
+        # exact bytes we ship, verifiable with `gh attestation verify <file>
+        # --repo pixhaus-app/lumagen`.
         if: github.event_name == 'push'
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
         with:
-          name: Lumagen ${{ steps.v.outputs.version }}
-          files: |
+          subject-path: |
             ${{ steps.portable.outputs.path }}
             ${{ steps.msi.outputs.path }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lumagen-windows-${{ steps.v.outputs.version }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lumagen-windows-${{ steps.v.outputs.version }}-msi
+          path: dist/*.msi
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    # Tag pushes only. workflow_dispatch builds+attests but never publishes.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Human approval gate: the `release` environment (repo Settings → Environments)
+    # has a required reviewer, so a v* tag cannot publish a release unreviewed.
+    environment: release
+    permissions:
+      contents: write # create the Release and upload assets
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fail if the tag and Cargo.toml disagree
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(grep -m1 '^version' Cargo.toml | sed -E 's/.*"([^"]+)".*/\1/')"
+          echo "tag=$tag  Cargo.toml=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match Cargo.toml version $pkg"
+            exit 1
+          fi
+
+      - name: Fail if the tagged commit is not on main
+        # A tag can point at ANY commit — including one that never survived review
+        # on main. Publish only what main actually contains.
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME is not an ancestor of origin/main — cut the tag from main"
+            exit 1
+          fi
+
+      - name: Download portable zip
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: lumagen-windows-${{ needs.build.outputs.version }}
+          path: dist
+
+      - name: Download MSI
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: lumagen-windows-${{ needs.build.outputs.version }}-msi
+          path: dist
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          name: Lumagen ${{ github.ref_name }}
+          files: |
+            dist/*.zip
+            dist/*.msi
           generate_release_notes: true

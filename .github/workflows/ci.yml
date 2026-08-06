@@ -4,10 +4,19 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Weekly re-audit: surfaces newly-published RUSTSEC advisories against the
+    # pinned lockfile even when no dependency changed (cargo-deny only otherwise
+    # runs on push/PR).
+    - cron: "0 6 * * 1"
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+# Least privilege: nothing in this workflow writes to the repo.
+permissions:
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -18,12 +27,17 @@ env:
 jobs:
   check:
     name: fmt · clippy · doc · build · test
+    # The full build/test gate is for code changes, not the weekly advisory cron.
+    if: github.event_name != 'schedule'
     runs-on: windows-latest
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - name: Install pinned toolchain (rust-toolchain.toml)
         run: rustup show
@@ -34,30 +48,33 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
 
       - name: rustdoc
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --workspace --no-deps --document-private-items
+        run: cargo doc --workspace --no-deps --document-private-items --locked
 
       - name: build (all targets — proves the GPU test suites compile)
-        run: cargo build --workspace --all-targets
+        run: cargo build --workspace --all-targets --locked
 
       - name: test (non-GPU suites)
         # `ui_screens` and `preview_render` render through wgpu and need a real GPU
         # adapter; GitHub-hosted runners have none, so they run locally (and in the
         # conclaude Stop gate) rather than here. Everything else runs on CI.
         run: |
-          cargo test --workspace --lib --bins
-          cargo test -p lumagen-core --tests
-          cargo test -p lumagen --test workflows --test modal_interaction --test settings_interaction
+          cargo test --workspace --lib --bins --locked
+          cargo test -p lumagen-core --tests --locked
+          cargo test -p lumagen --test workflows --test modal_interaction --test settings_interaction --locked
 
   deny:
     name: cargo-deny (licenses · advisories · sources)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: taiki-e/install-action@cb33e69fad06166ca28a42b2575e4dadabf62ee8 # v2
         with:
           tool: cargo-deny
