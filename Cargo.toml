@@ -44,7 +44,7 @@ egui = "=0.34.2"
 egui_extras = { version = "=0.34.2", features = ["image"] }
 egui-wgpu = "=0.34.2"
 egui-phosphor = { version = "0.12", features = ["regular", "bold", "fill"] }
-wgpu = "=29.0.1"
+wgpu = "=30.0.0"
 # Vertex/uniform POD casting for the hand-rolled wgpu PBR preview (Phase 4).
 bytemuck = { version = "1", features = ["derive"] }
 # wgpu-hal 29.0.4's DX12 suballocator mixes gpu-allocator's windows 0.58 types with its own
