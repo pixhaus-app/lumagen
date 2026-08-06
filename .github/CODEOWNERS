@@ -1,0 +1,19 @@
+# Security-sensitive surfaces. CODEOWNERS auto-requests the owner's review on
+# any PR touching these paths. (Hard enforcement additionally needs branch
+# protection, which this repo does not set — it leans on the no-push-to-main
+# guard and the `release` environment approval instead.)
+
+# The CI / release pipeline itself
+/.github/                     @lacion
+
+# Dependency + toolchain manifests — the build graph decides what code runs
+/Cargo.toml                   @lacion
+/Cargo.lock                   @lacion
+/lumagen-core/Cargo.toml      @lacion
+/rust-toolchain.toml          @lacion
+/.cargo/                      @lacion
+
+# Runs at build time, handles secrets, or talks to the network
+/src/build.rs                 @lacion
+/src/secrets.rs               @lacion
+/lumagen-core/src/providers/  @lacion
