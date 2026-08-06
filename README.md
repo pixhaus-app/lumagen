@@ -30,6 +30,35 @@ emission, and transparency — with **every map pixel-aligned to the albedo** an
 exported in the layout your engine expects. It runs **fully offline out of the
 box**; plug in a provider key when you want AI-generated albedos.
 
+## Download
+
+Lumagen is **Windows-only for now** (macOS and Linux are on the roadmap). Grab
+the latest build from the
+[**Releases page**](https://github.com/pixhaus-app/lumagen/releases/latest):
+
+- **Installer (recommended)** — download `lumagen-<version>-x86_64-windows.msi`,
+  double-click, and follow the prompts. It installs Lumagen with a Start-Menu
+  entry, and a newer MSI upgrades an existing install in place.
+- **Portable** — download `lumagen-<version>-x86_64-windows-portable.zip`, unzip
+  anywhere, and run `lumagen.exe`. Nothing is installed or written outside the
+  folder.
+
+The binaries aren't code-signed yet, so Windows SmartScreen may warn on first
+launch — choose **More info → Run anyway**.
+
+<details>
+<summary><b>Verify your download (optional)</b></summary>
+
+Every release artifact carries signed [SLSA build provenance](https://slsa.dev).
+With the [GitHub CLI](https://cli.github.com), confirm a file was built by
+Lumagen's own release workflow from a tagged commit — and not tampered with:
+
+```sh
+gh attestation verify lumagen-0.1.0-x86_64-windows.msi --repo pixhaus-app/lumagen
+```
+
+</details>
+
 ## Why artists use it
 
 - **One description → a whole material.** No more sourcing or authoring eight
@@ -125,20 +154,18 @@ Credential Manager, macOS Keychain, or libsecret) — never written to disk in
 app settings or config files. Add a key any time under **Settings → Providers**;
 until you do, Lumagen simply uses the offline engine.
 
-## Install and run
+## Build from source
 
-Lumagen is a native Rust app. With a [Rust toolchain](https://rustup.rs)
-installed (the pinned version in `rust-toolchain.toml`, edition 2024):
+Prefer to build it yourself? With a [Rust toolchain](https://rustup.rs) installed
+(the pinned version in `rust-toolchain.toml`, edition 2024):
 
 ```sh
 cargo run --release
 ```
 
-### Build a Windows installer
-
-```sh
-cargo bundle --release --format msi
-```
+The release artifacts (portable zip + MSI installer) are produced by the
+`Release` GitHub Actions workflow on a version tag — see
+[`.github/workflows/release.yml`](.github/workflows/release.yml).
 
 ## License
 
