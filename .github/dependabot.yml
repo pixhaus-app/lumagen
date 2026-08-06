@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Cargo covers the whole workspace (root + lumagen-core) through the root
+  # lockfile. Ungrouped on purpose: a dependency bump changes what the build
+  # graph compiles and runs, so each one should arrive as a small, individually
+  # reviewable PR rather than a bulk diff no one can audit.
+  - package-ecosystem: cargo
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+
+  # Keeps the SHA-pinned GitHub Actions current — Dependabot bumps the pin and
+  # its `# vX` version comment together.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
