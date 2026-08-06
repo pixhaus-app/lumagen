@@ -35,7 +35,7 @@ workspace = true
 lumagen-core = { path = "lumagen-core" }
 # egui family pinned in lockstep per the eframe/egui skills (verified 0.34.2 API);
 # wgpu pinned exactly as the skills mandate.
-eframe = { version = "=0.34.2", default-features = false, features = [
+eframe = { version = "=0.35.0", default-features = false, features = [
     "wgpu",
     "default_fonts",
     "persistence",
