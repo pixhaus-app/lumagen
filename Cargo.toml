@@ -43,7 +43,7 @@ eframe = { version = "=0.34.2", default-features = false, features = [
 egui = "=0.34.2"
 egui_extras = { version = "=0.34.2", features = ["image"] }
 egui-wgpu = "=0.34.2"
-egui-phosphor = { version = "0.12", features = ["regular", "bold", "fill"] }
+egui-phosphor = { version = "0.13", features = ["regular", "bold", "fill"] }
 wgpu = "=29.0.1"
 # Vertex/uniform POD casting for the hand-rolled wgpu PBR preview (Phase 4).
 bytemuck = { version = "1", features = ["derive"] }
