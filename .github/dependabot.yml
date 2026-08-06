@@ -1,17 +1,31 @@
 version: 2
 updates:
   # Cargo covers the whole workspace (root + lumagen-core) through the root
-  # lockfile. Ungrouped on purpose: a dependency bump changes what the build
-  # graph compiles and runs, so each one should arrive as a small, individually
-  # reviewable PR rather than a bulk diff no one can audit.
+  # lockfile.
   - package-ecosystem: cargo
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    groups:
+      # The egui stack is version-locked — eframe / egui / egui_extras /
+      # egui-wgpu / egui_kittest / egui-phosphor must move together. Deliver them
+      # as ONE PR so the coupled bump is reviewable and actually mergeable as a
+      # set (ungrouped, they arrive as separate PRs that each fail to build alone).
+      egui:
+        patterns:
+          - "egui*"
+          - "eframe"
+    ignore:
+      # Held deliberately until the egui/wgpu stack itself moves:
+      #   - wgpu is capped at 29 by egui-wgpu 0.35 (requires ^29)
+      #   - windows-core is pinned at =0.58 for wgpu-hal 29's DX12 suballocator
+      - dependency-name: "wgpu"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "windows-core"
 
   # Keeps the SHA-pinned GitHub Actions current — Dependabot bumps the pin and
-  # its `# vX` version comment together.
+  # its version comment together.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
